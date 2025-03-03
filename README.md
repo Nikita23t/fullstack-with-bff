@@ -1,6 +1,7 @@
  
 ## A simple todo app for learning about bff work
 
+**Заполнить env**
 
 ```bash
 # for start backend
@@ -22,3 +23,7 @@
  npm i
  npm start
 ```
+
+
+
+## Доделать до окнца CRUD

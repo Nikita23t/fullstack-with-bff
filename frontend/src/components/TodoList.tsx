@@ -11,13 +11,13 @@ interface Todo {
 export default function TodoList() {
     const [todos, setTodos] = useState<Todo[]>([])
     const [newTodo, setNewTodo] = useState('')
-    const API_URL = process.env.REACT_APP_API_BASE_URL;
+    const API_URL = process.env.REACT_APP_API_BASE_URL
 
     useEffect(() => {
         fetch(`${API_URL}/todos`)
             .then(res => res.json())
             .then(data => setTodos(data))
-    }, [])
+    }, [API_URL])
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
@@ -26,10 +26,25 @@ export default function TodoList() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ title: newTodo })
         })
-        .then(res => res.json())
-        .then(data => setTodos([...todos, data]))
-        
-        setNewTodo('')
+            .then(res => res.json())
+            .then(data => {
+                setTodos([...todos, data])
+                setNewTodo('')
+            })
+    }
+
+    const handleToggle = (id: number, completed: boolean) => {
+        fetch(`${API_URL}/todos/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ completed })
+        })
+            .then(res => res.json())
+            .then(updatedTodo => {
+                setTodos(todos.map(todo => 
+                    todo.id === id ? { ...todo, completed: updatedTodo.completed } : todo
+                ))
+            })
     }
 
     return (
@@ -40,21 +55,26 @@ export default function TodoList() {
                     type="text"
                     value={newTodo}
                     onChange={(e) => setNewTodo(e.target.value)}
-                    placeholder="добавить щзапись"
+                    placeholder="добавить запись"
                 />
-                <button type="submit">Add</button>
+                <button type="submit">добавить</button>
             </form>
             <ul>
-                {todos.map(todo => (
-                    <li key={todo.id}>
-                        {todo.title}
-                        <input 
-                            type="checkbox" 
-                            checked={todo.completed}
-                            onChange={() => {}}
-                        />
-                    </li>
-                ))}
+                {todos.length === 0 ? (
+                    <div>пусто</div>
+                ) : (
+                    todos.map(todo => (
+                        <li key={todo.id}>
+                            {todo.title}
+                            <input
+                                type="checkbox"
+                                checked={todo.completed}
+                                onChange={(e) => handleToggle(todo.id, e.target.checked)}
+                            />
+                            <button type="submit">удалить</button>
+                        </li>
+                    ))
+                )}
             </ul>
         </div>
     )
